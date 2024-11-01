@@ -26,5 +26,6 @@
   include 'footer.php';
 
 ?>
+<html></html>
 
   
