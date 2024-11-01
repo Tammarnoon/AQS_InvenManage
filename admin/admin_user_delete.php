@@ -24,7 +24,7 @@ if (isset($_GET['id']) && $_GET['act'] == 'delete') {
             exit;
         } else {
             // echo 'ผ่าน';
-
+    
             // ลบข้อมูลใน tbl_user
             $sqldeleteUser = $condb->prepare('DELETE FROM tbl_user WHERE id=:id');
             $sqldeleteUser->bindParam(':id', $id, PDO::PARAM_INT);
@@ -65,3 +65,6 @@ if (isset($_GET['id']) && $_GET['act'] == 'delete') {
                   </script>';
     }
 }
+    
+?>
+<hmtl></hmtl>

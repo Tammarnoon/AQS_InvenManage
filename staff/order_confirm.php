@@ -131,3 +131,6 @@ if (isset($_SESSION['customer']) && isset($_SESSION['productItems']) && isset($_
 } else {
     echo "ไม่มีข้อมูลการสั่งซื้อ";
 }
+?>
+
+<html></html>

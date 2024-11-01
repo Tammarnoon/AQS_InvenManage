@@ -5,5 +5,5 @@
   include 'index_main_content.php';
   include 'footer.php';
 ?>
-
+<html> </html>
   
