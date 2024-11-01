@@ -164,3 +164,4 @@ if (isset($_POST['id']) && isset($_POST['newpassword']) && isset($_POST['confirm
 
 ?>
 <!--  END PHP CONFIRM PASSWORD -->
+<hmtl></hmtl>
