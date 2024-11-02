@@ -24,6 +24,7 @@ if (!isset($_SESSION['user_level']) || $_SESSION['user_level'] != 'admin') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AquaTechSupply</title>
 
+
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
@@ -45,7 +46,7 @@ if (!isset($_SESSION['user_level']) || $_SESSION['user_level'] != 'admin') {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert-dev.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.css">
 
-  <link rel="icon" type="image/png" href="../assets/icon/">
+  <link rel="icon" type="image/png" href="../assets/dist/logo/logo2.png">
 
 </head>
 

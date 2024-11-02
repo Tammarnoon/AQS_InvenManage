@@ -81,6 +81,7 @@ if (isset($_POST['username']) && isset($_POST['password']) && $_POST['action'] =
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="assets/icon/logo2.png">
     <title>AquatechLogin</title>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -102,7 +103,6 @@ if (isset($_POST['username']) && isset($_POST['password']) && $_POST['action'] =
         <div class="card">
             <div class="card-body login-card-body">
                 <p class="login-box-msg">Login เพื่อทำการเข้าสู่ระบบ</p>
-
                 <form action="" method="post">
                     <div class="input-group mb-3">
                         <input type="text" name="username" class="form-control" placeholder="username" required>
