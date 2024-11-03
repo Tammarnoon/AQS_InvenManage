@@ -1,49 +1,34 @@
 <?php
 session_start();
-require_once '../config/condb.php'; // เชื่อมต่อฐานข้อมูล
+include '../config/condb.php'; // เชื่อมต่อฐานข้อมูล
 
-if (isset($_POST['product_id']) && isset($_POST['product_qty'])) {
-    $productId = $_POST['product_id'];
-    $newQty = $_POST['product_qty'];
+// ตรวจสอบข้อมูลที่ส่งมา
+if (isset($_POST['product_id'], $_POST['product_qty'])) {
+    $product_id = $_POST['product_id'];
+    $new_qty = $_POST['product_qty'];
 
-    // คิวรี่ข้อมูลเพื่อตรวจสอบจำนวนที่มีในคลัง
-    $stmt = $condb->prepare("SELECT product_qty FROM tbl_product WHERE product_id = :product_id");
-    $stmt->execute(['product_id' => $productId]);
-    $product = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$product) {
-        echo json_encode(['status' => 'error', 'message' => 'ไม่พบสินค้านี้']);
-        exit;
-    }
-
-    $availableQty = $product['product_qty'];
-
-    // ตรวจสอบว่าจำนวนใหม่จะเกินจำนวนที่มีในคลังหรือไม่
-    if ($newQty > $availableQty) {
-        echo json_encode(['status' => 'error', 'message' => 'จำนวนสินค้าเกินที่มีในคลัง']);
-        exit;
-    }
-
-    // อัปเดตจำนวนในเซสชัน
-    foreach ($_SESSION['productItem'] as $key => $item) {
-        if ($item['product_id'] == $productId) {
-            $_SESSION['productItem'][$key]['quantity'] = $newQty;
-            $totalItemPrice = $item['product_price'] * $newQty; // คำนวณราคารวมของสินค้าแต่ละรายการ
+    // อัปเดตสินค้าในฐานข้อมูล
+    // ตัวอย่างการอัปเดตสินค้า (คุณอาจต้องการตรวจสอบและอัปเดตตามฐานข้อมูลจริง)
+    foreach ($_SESSION['productItem'] as &$item) {
+        if ($item['product_id'] == $product_id) {
+            $item['quantity'] = $new_qty;
+            $total_item_price = $item['product_price'] * $new_qty;
+            break;
         }
     }
 
     // คำนวณราคารวมทั้งหมด
-    $totalPrice = 0;
-    foreach ($_SESSION['productItem'] as $item) {
-        $totalPrice += $item['product_price'] * $item['quantity'];
-    }
+    $total_price = array_reduce($_SESSION['productItem'], function($sum, $item) {
+        return $sum + ($item['product_price'] * $item['quantity']);
+    }, 0);
 
-    // ส่งผลลัพธ์กลับไปที่ฝั่ง JavaScript
+    // ตอบกลับข้อมูลแบบ JSON
     echo json_encode([
         'status' => 'success',
-        'total_price' => $totalPrice,  // ราคารวมทั้งหมดของสินค้าทั้งหมด
-        'total_item_price' => $totalItemPrice // ราคารวมของสินค้าแต่ละรายการ
+        'total_item_price' => $total_item_price,
+        'total_price' => $total_price
     ]);
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'ข้อมูลไม่ถูกต้อง']);
+    echo json_encode(['status' => 'error', 'message' => 'ข้อมูลไม่ครบถ้วน']);
 }
+?>

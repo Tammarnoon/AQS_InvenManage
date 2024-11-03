@@ -53,10 +53,8 @@ if ($userData) {
 
 // คิวรี่เพื่อดึงข้อมูลสินค้าที่สั่งซื้อ
 $selectOrderItems = $condb->prepare("
-    SELECT p.product_name, p.product_price, oi.quantity
-    FROM tbl_order_item AS oi
-    JOIN tbl_product AS p ON oi.ref_product_id = p.product_id
-    WHERE oi.ref_bill_number = :billNumber
+    SELECT *
+    FROM tbl_order_item WHERE ref_bill_number = :billNumber
 ");
 $selectOrderItems->bindParam(':billNumber', $billNumber, PDO::PARAM_STR);
 $selectOrderItems->execute();
@@ -71,7 +69,7 @@ if (!$orderItems) {
 $vatRate = 0.07; // VAT 7%
 $totalPrice = 0;
 foreach ($orderItems as $item) {
-    $itemTotal = $item['product_price'] * $item['quantity'];
+    $itemTotal = $item['price'] * $item['quantity'];
     $totalPrice += $itemTotal;
 }
 $vatAmount = $totalPrice * $vatRate;
@@ -127,13 +125,13 @@ $netPrice = $totalPrice + $vatAmount;
         <tbody>
             <?php
             foreach ($orderItems as $key => $item) {
-                $itemTotal = $item['product_price'] * $item['quantity'];
+                $itemTotal = $item['price'] * $item['quantity'];
             ?>
                 <tr>
                     <td><?php echo $key + 1; ?></td>
                     <td><?php echo $item['product_name']; ?></td>
                     <td><?php echo $item['quantity']; ?></td>
-                    <td><?php echo number_format($item['product_price'], 2); ?></td>
+                    <td><?php echo number_format($item['price'], 2); ?></td>
                     <td><?php echo number_format($itemTotal, 2); ?></td>
                 </tr>
             <?php } ?>

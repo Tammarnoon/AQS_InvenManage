@@ -77,33 +77,39 @@ $resultProducts = $sqlqueryProduct->fetchAll();
 <?php
 
 if (isset($_POST['submit-stock-in'])) {
-    $product_id = $_POST['product_id'];
-    $quantity = $_POST['quantity'];
+  $product_id = $_POST['product_id'];
+  $quantity = $_POST['quantity'];
 
-    // ตรวจสอบว่าผู้ใช้ได้เลือกสินค้าหรือไม่
-    if (empty($product_id) || $quantity <= 0) {
-        echo '<script>alert("กรุณาเลือกสินค้าและกรอกจำนวนที่ถูกต้อง");</script>';
-        exit;
-    }
+  // ตรวจสอบว่าผู้ใช้ได้เลือกสินค้าหรือไม่
+  if (empty($product_id) || $quantity <= 0) {
+      echo '<script>alert("กรุณาเลือกสินค้าและกรอกจำนวนที่ถูกต้อง");</script>';
+      exit;
+  }
 
-    // บันทึกข้อมูลลงใน tbl_stock_in
-    $stmt = $condb->prepare("INSERT INTO tbl_stock_in (product_id, quantity) VALUES (:product_id, :quantity)");
-    $stmt->execute(['product_id' => $product_id, 'quantity' => $quantity]);
+  // คิวรี่ชื่อสินค้าจาก tbl_product
+  $sqlGetProductName = $condb->prepare("SELECT product_name FROM tbl_product WHERE product_id = :product_id");
+  $sqlGetProductName->execute(['product_id' => $product_id]);
+  $productData = $sqlGetProductName->fetch(PDO::FETCH_ASSOC);
+  $product_name = $productData['product_name'];
 
-    // อัปเดตตารางสินค้าเพื่อเพิ่มจำนวนในคลัง
-    $stmt = $condb->prepare("UPDATE tbl_product SET product_qty = product_qty + :quantity WHERE product_id = :product_id");
-    $stmt->execute(['quantity' => $quantity, 'product_id' => $product_id]);
+  // บันทึกข้อมูลลงใน tbl_stock_in 
+  $stmt = $condb->prepare("INSERT INTO tbl_stock_in ( product_name, quantity) VALUES ( :product_name, :quantity)");
+  $stmt->execute(['product_name' => $product_name, 'quantity' => $quantity]);
 
-    echo '<script>
-                      setTimeout(function() {
-                        swal({
-                            title: "บันทึกข้อมูล Stock In เรียบร้อยแล้ว",
-                            type: "success"
-                        }, function() {
-                            window.location = "staff_product.php?act=storckin"; //หน้าที่ต้องการให้กระโดดไป
-                        });
-                      }, 1);
-                  </script>';
+  // อัปเดตตารางสินค้าเพื่อเพิ่มจำนวนในคลัง
+  $stmt = $condb->prepare("UPDATE tbl_product SET product_qty = product_qty + :quantity WHERE product_id = :product_id");
+  $stmt->execute(['quantity' => $quantity, 'product_id' => $product_id]);
+
+  echo '<script>
+                    setTimeout(function() {
+                      swal({
+                          title: "บันทึกข้อมูล Stock In เรียบร้อยแล้ว",
+                          type: "success"
+                      }, function() {
+                          window.location = "staff_product.php?act=storckin"; //หน้าที่ต้องการให้กระโดดไป
+                      });
+                    }, 1);
+                </script>';
 }
 
 ?>

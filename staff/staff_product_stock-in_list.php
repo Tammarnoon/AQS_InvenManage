@@ -1,11 +1,9 @@
 <?php
 // ดึงข้อมูลจากฐานข้อมูล Stock-in
 $selectStockIn = $condb->prepare("
-    SELECT si.id, p.product_name, si.quantity, si.date_in, c.cate_name
-    FROM tbl_stock_in AS si
-    JOIN tbl_product AS p ON si.product_id = p.product_id
-    JOIN tbl_category AS c ON p.ref_cate_id = c.cate_id
-    ORDER BY si.date_in DESC
+    SELECT id, product_name, quantity, date_in
+    FROM tbl_stock_in
+    ORDER BY date_in DESC
 ");
 $selectStockIn->execute();
 $resulStockIn = $selectStockIn->fetchAll();
@@ -20,6 +18,7 @@ $selectOutOfStock = $condb->prepare("
 $selectOutOfStock->execute();
 $resultOutOfStock = $selectOutOfStock->fetchAll();
 ?>
+
 
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
@@ -88,7 +87,7 @@ $resultOutOfStock = $selectOutOfStock->fetchAll();
                                         <th>ชื่อสินค้า</th>
                                         <th>จำนวนที่เข้า</th>
                                         <th>วันที่</th>
-                                        <th>หมวดหมู่</th>
+    
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -98,7 +97,7 @@ $resultOutOfStock = $selectOutOfStock->fetchAll();
                                             <td><?php echo $row['product_name']; ?></td>
                                             <td><?php echo $row['quantity']; ?></td>
                                             <td><?php echo $row['date_in']; ?></td>
-                                            <td><?php echo $row['cate_name']; ?></td>
+
                                         </tr>
                                     <?php } ?>
                                 </tbody>

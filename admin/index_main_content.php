@@ -87,10 +87,7 @@ foreach ($userLevels as $level) {
           <!-- /.row -->
         </div><!-- /.card-body -->
       </div><!-- /.card -->
-      <!-- Highcharts integration for User Registrations Over Time -->
-      <figure class="highcharts-figure">
-          <div id="container-registrations"></div>
-      </figure>
+      
       <hr>
       <!-- Highcharts integration for User Level Composition -->
       <figure class="highcharts-figure">
@@ -103,31 +100,7 @@ foreach ($userLevels as $level) {
       <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 
       <script>
-      // Chart for User Registrations Over Time
-      Highcharts.chart('container-registrations', {
-          title: {
-              text: 'User Registrations Over Time'
-          },
-          xAxis: {
-              title: {
-                  text: 'Date'
-              },
-              categories: <?php echo json_encode($dates); ?>
-          },
-          yAxis: {
-              title: {
-                  text: 'Number of Users'
-              }
-          },
-          tooltip: {
-              headerFormat: '<b>{series.name}</b><br />',
-              pointFormat: '{point.y} user(s)'
-          },
-          series: [{
-              name: 'User Registrations',
-              data: <?php echo json_encode($userCounts); ?>
-          }]
-      });
+
 
       // Chart for User Level Composition
       Highcharts.chart('container-levels', {

@@ -122,10 +122,7 @@ $resulProd = $selectProd->fetchAll();
                     <td style="text-align: center;">
                       <div class="input-group" style="display: flex; justify-content: center; align-items: center;">
                         <input type="hidden" value="<?php echo $item['product_id']; ?>" class="product-id">
-                        <button type="button" class="btn btn-danger btn-decrement" style="height: 33px; width: 33px;">-</button>
-                        <input type="text" class="text-center product-quantity" value="<?php echo $item['quantity']; ?>" readonly style="height: 33px; width: 45px;">
-                        <button type="button" class="btn btn-primary btn-increment" style="height: 33px; width: 33px;">+</button>
-                      </div>
+                        <?php echo $item['quantity']; ?>
                     </td>
                     <td class="text-center"><?php echo number_format($item['product_price'], 2); ?></td>
                     <td class="text-center total-item-price"><?php echo number_format($item['product_price'] * $item['quantity'], 2); ?></td>
@@ -212,64 +209,6 @@ $resulProd = $selectProd->fetchAll();
 
 </div>
 
-<!-- js ปุ่มเพิ่มจำนวนสินต้าในตาราง -->
-<script>
-  $(document).ready(function() {
-    $('.btn-increment').on('click', function() {
-      var $row = $(this).closest('tr');
-      var productId = $row.find('.product-id').val();
-      var $qtyField = $row.find('.product-quantity');
-      var currentQty = parseInt($qtyField.val());
-
-      updateQuantity(productId, currentQty + 1); // อัปเดตจำนวนสินค้า
-    });
-
-    $('.btn-decrement').on('click', function() {
-      var $row = $(this).closest('tr');
-      var productId = $row.find('.product-id').val();
-      var $qtyField = $row.find('.product-quantity');
-      var currentQty = parseInt($qtyField.val());
-
-      if (currentQty > 1) {
-        updateQuantity(productId, currentQty - 1); // อัปเดตจำนวนสินค้า
-      }
-    });
-
-    function updateQuantity(productId, newQty) {
-      $.ajax({
-        url: 'update_quantity.php',
-        type: 'POST',
-        data: {
-          product_id: productId,
-          product_qty: newQty
-        },
-        success: function(response) {
-          var data = JSON.parse(response);
-
-          if (data.status === 'success') {
-            var $row = $('input[value="' + productId + '"]').closest('tr');
-
-            // อัปเดตจำนวนสินค้าในตาราง
-            $row.find('.product-quantity').val(newQty);
-
-            // อัปเดตราคาสินค้ารายการนั้น
-            $row.find('.total-item-price').text(data.total_item_price.toFixed(2));
-
-            // อัปเดตราคารวมทั้งหมดด้านล่าง
-            $('#total-price').text(data.total_price.toFixed(2));
-          } else {
-            alert(data.message);
-          }
-        },
-        error: function() {
-          alert('เกิดข้อผิดพลาดในการอัปเดตจำนวนสินค้า');
-        }
-      });
-    }
-
-  });
-</script>
-<!-- js ปุ่มเพิ่มจำนวนสินต้าในตาราง -->
 
 <!-- PHP ส่งสินส่งเข้ารายการ -->
 <?php

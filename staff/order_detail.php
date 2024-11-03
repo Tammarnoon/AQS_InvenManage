@@ -73,12 +73,13 @@ if ($userPaidByData) {
     $userPaidByFullName = "";
 }
 
-// คิวรี่เพื่อดึงข้อมูล product_id, quantity จาก tbl_order_item ตาม bill_number
+// คิวรี่เพื่อดึงข้อมูล จาก tbl_order_item ตาม bill_number
 $selectOrderItems = $condb->prepare("
-    SELECT ref_product_id, quantity 
+    SELECT *
     FROM tbl_order_item 
     WHERE ref_bill_number = :billNumber
 ");
+
 $selectOrderItems->bindParam(':billNumber', $billNumber, PDO::PARAM_STR);
 $selectOrderItems->execute();
 $orderItems = $selectOrderItems->fetchAll(PDO::FETCH_ASSOC);
@@ -89,28 +90,27 @@ if (!$orderItems) {
     exit;
 }
 
+
 // เตรียม array เก็บข้อมูลสินค้า
 $productDetails = [];
 $totalPrice = 0;
 
+// เก็บข้อมูลสินค้าที่ดึงมาไว้ใน array พร้อมกับจำนวนสินค้าและราคา
 foreach ($orderItems as $item) {
-    // ดึงข้อมูลสินค้าแต่ละชิ้นจาก tbl_product
-    $selectProduct = $condb->prepare("
-        SELECT p.product_name, p.product_qty, p.product_price, p.product_img, 
-               COALESCE(c.cate_name, 'ไม่มีหมวดหมู่') AS cate_name
-        FROM tbl_product AS p
-        LEFT JOIN tbl_category AS c ON p.ref_cate_id = c.cate_id
-        WHERE p.product_id = :productId
-    ");
-    $selectProduct->bindParam(':productId', $item['ref_product_id'], PDO::PARAM_INT);
-    $selectProduct->execute();
-    $productData = $selectProduct->fetch(PDO::FETCH_ASSOC);
+    
+    if (!empty($item['product_id'])) { 
+        $productDetails[] = [
+            'quantity' => $item['quantity'],
+            'price' => $item['price'],
+            'product_id' => $item['product_id'], 
+            'product_name' => $item['product_name'] 
+        ];
 
-    // เก็บข้อมูลสินค้าที่ดึงมาไว้ใน array พร้อมกับจำนวนสินค้า
-    if ($productData) {
-        $productDetails[] = array_merge($productData, ['quantity' => $item['quantity']]);
-        $itemTotal = $productData['product_price'] * $item['quantity'];
+        // คำนวณราคารวมของรายการสินค้า
+        $itemTotal = $item['price'] * $item['quantity'];
         $totalPrice += $itemTotal;
+    } else {
+        echo "Product ID is missing for item: " . print_r($item, true) . "\n"; 
     }
 }
 
@@ -191,9 +191,8 @@ $netPrice = $totalPrice + $vatAmount;
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th width="5%">No.</th>
-                                    <th width="40%">ชื่อสินค้า</th>
-                                    <th width="15%">หมวดหมู่</th>
+                                    <th width="10%">No.</th>
+                                    <th width="50%">ชื่อสินค้า</th>
                                     <th width="10%">จำนวน</th>
                                     <th width="15%">ราคา</th>
                                     <th width="15%">รวมราคา</th>
@@ -202,14 +201,13 @@ $netPrice = $totalPrice + $vatAmount;
                             <tbody>
                                 <?php
                                 foreach ($productDetails as $key => $product) {
-                                    $itemTotal = $product['product_price'] * $product['quantity'];
+                                    $itemTotal = $product['price'] * $product['quantity'];
                                 ?>
                                     <tr>
                                         <td><?php echo $key + 1; ?></td>
                                         <td><?php echo $product['product_name']; ?></td>
-                                        <td><?php echo $product['cate_name']; ?></td>
                                         <td><?php echo $product['quantity']; ?></td>
-                                        <td><?php echo number_format($product['product_price'], 2); ?></td>
+                                        <td><?php echo number_format($product['price'], 2); ?></td>
                                         <td><?php echo number_format($itemTotal, 2); ?></td>
                                     </tr>
                                 <?php } ?>

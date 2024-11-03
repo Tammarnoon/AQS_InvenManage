@@ -39,24 +39,6 @@ if (isset($_GET['product_id']) && $_GET['act'] == 'delete') {
             $sqldeleteProduct->bindParam(':product_id', $product_id, PDO::PARAM_INT);
             $sqldeleteProduct->execute();
 
-            // Query สำหรับดึงชื่อไฟล์ภาพจาก tbl_product_img
-            $sqlSelectSubImages = $condb->prepare('SELECT sub_product_img FROM tbl_product_img WHERE ref_product_id=:product_id');
-            $sqlSelectSubImages->bindParam(':product_id', $product_id, PDO::PARAM_INT);
-            $sqlSelectSubImages->execute();
-            $subImages = $sqlSelectSubImages->fetchAll(PDO::FETCH_ASSOC);
-
-            // ลบไฟล์ภาพจาก tbl_product_img
-            foreach ($subImages as $img) {
-                if (!empty($img['sub_product_img'])) {
-                    unlink('../assets/product_gallary/' . $img['sub_product_img']);
-                }
-            }
-
-            // ลบข้อมูลจาก tbl_product_img
-            $sqldeleteProductImg = $condb->prepare('DELETE FROM tbl_product_img WHERE ref_product_id=:product_id');
-            $sqldeleteProductImg->bindParam(':product_id', $product_id, PDO::PARAM_INT);
-            $sqldeleteProductImg->execute();
-
             $condb = null;
 
             if ($sqldeleteProduct->rowCount() == 1) {
@@ -78,7 +60,8 @@ if (isset($_GET['product_id']) && $_GET['act'] == 'delete') {
         } // เงื่อนไขการลบภาพ
     } catch (PDOException $e) {
         // error show
-        // echo 'Message: '. $e->getMessage();
+        echo 'Message: '. $e->getMessage();
+        exit;
 
         // handle PDOException errors
         echo '<script>

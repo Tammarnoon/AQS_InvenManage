@@ -1,6 +1,6 @@
 <?php
 if (isset($_SESSION['customer']) && isset($_SESSION['productItems']) && isset($_SESSION['totalPrice']) && isset($_SESSION['billNumber'])) {
-    // รับค่าจากเซสชันและแปลงเป็นข้อความที่ปลอดภัย
+    // รับค่าจากเซสชัน
     $customerId = htmlspecialchars($_SESSION['customer']['cus_id']);
     $billNumber = htmlspecialchars($_SESSION['billNumber']);
     $totalPrice = htmlspecialchars($_SESSION['totalPrice']);
@@ -32,8 +32,9 @@ if (isset($_SESSION['customer']) && isset($_SESSION['productItems']) && isset($_
         $stmtInsertOrder->execute();
 
         // Prepare the SQL statement for inserting into tbl_order_item
-        $sqlInsertOrderItem = "INSERT INTO tbl_order_item (ref_bill_number, ref_product_id, price, quantity)
-            VALUES (:refBillNumber, :refProductId, :price, :quantity)";
+        $sqlInsertOrderItem = "INSERT INTO tbl_order_item (ref_bill_number, product_id, product_name, price, quantity)
+            VALUES (:refBillNumber, :refProductId, :productName , :price, :quantity)";
+
         $stmtInsertOrderItem = $condb->prepare($sqlInsertOrderItem);
 
         // เตรียมคำสั่ง SQL สำหรับการตรวจสอบจำนวนสินค้าในคลัง
@@ -43,15 +44,17 @@ if (isset($_SESSION['customer']) && isset($_SESSION['productItems']) && isset($_
         // Loop through product items in the session
         foreach ($_SESSION['productItems'] as $item) {
             // Get the product details
-            $refProductId = htmlspecialchars($item['product_id']); // Assume you have 'product_id' in your item
+            $refProductId = htmlspecialchars($item['product_id']);
             $price = htmlspecialchars($item['product_price']);
             $quantity = htmlspecialchars($item['quantity']);
+            $productName = htmlspecialchars($item['product_name']); // ดึงชื่อผลิตภัณฑ์
 
             // Binding parameters for the order item
-            $stmtInsertOrderItem->bindParam(':refBillNumber', $billNumber); // ใช้ bill_number แทน
+            $stmtInsertOrderItem->bindParam(':refBillNumber', $billNumber);
             $stmtInsertOrderItem->bindParam(':refProductId', $refProductId);
             $stmtInsertOrderItem->bindParam(':price', $price);
             $stmtInsertOrderItem->bindParam(':quantity', $quantity);
+            $stmtInsertOrderItem->bindParam(':productName', $productName); // ทำให้แน่ใจว่ามีการตั้งค่าแล้ว
 
             // Execute the statement for each product item
             $stmtInsertOrderItem->execute();
@@ -111,10 +114,12 @@ if (isset($_SESSION['customer']) && isset($_SESSION['productItems']) && isset($_
 
 
         exit;
-
     } catch (PDOException $e) {
         // Rollback if an error occurs
-        $condb->rollBack();
+        $condb->rollBack(); // ยกเลิกการทำงานทั้งหมดหากเกิดข้อผิดพลาด
+        echo "Error: " . htmlspecialchars($e->getMessage()); // แสดงข้อความข้อผิดพลาด
+        exit;
+
         // Show error message
         echo '<script>
                 setTimeout(function() {
@@ -133,4 +138,6 @@ if (isset($_SESSION['customer']) && isset($_SESSION['productItems']) && isset($_
 }
 ?>
 
-<html></html>
+<html>
+
+</html>

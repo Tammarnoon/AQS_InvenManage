@@ -95,7 +95,7 @@ if (isset($_POST['submit-order'])) {
     $customerTel = $customer['tel'];
     $customerAddress = $customer['address'];
     $productItems = $_SESSION['productItem'];
-    $userName = $_SESSION['username'] ?? null; // ใช้ null coalescing operator เพื่อป้องกัน error
+    $userName = $_SESSION['username'] ?? null; 
     $totalPrice = 0;
     $billDate = date('d-m-Y');
 
