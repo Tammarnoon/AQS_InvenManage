@@ -97,20 +97,20 @@ $totalPrice = 0;
 
 // เก็บข้อมูลสินค้าที่ดึงมาไว้ใน array พร้อมกับจำนวนสินค้าและราคา
 foreach ($orderItems as $item) {
-    
-    if (!empty($item['product_id'])) { 
+
+    if (!empty($item['product_id'])) {
         $productDetails[] = [
             'quantity' => $item['quantity'],
             'price' => $item['price'],
-            'product_id' => $item['product_id'], 
-            'product_name' => $item['product_name'] 
+            'product_id' => $item['product_id'],
+            'product_name' => $item['product_name']
         ];
 
         // คำนวณราคารวมของรายการสินค้า
         $itemTotal = $item['price'] * $item['quantity'];
         $totalPrice += $itemTotal;
     } else {
-        echo "Product ID is missing for item: " . print_r($item, true) . "\n"; 
+        // echo "Product ID is missing for item: " . print_r($item, true) . "\n";
     }
 }
 
@@ -214,15 +214,15 @@ $netPrice = $totalPrice + $vatAmount;
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="5" class="text-right"><strong>รวมทั้งหมด:</strong></td>
+                                    <td colspan="4" class="text-right"><strong>รวมทั้งหมด:</strong></td>
                                     <td><?php echo number_format($totalPrice, 2); ?></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="5" class="text-right"><strong>VAT (7%):</strong></td>
+                                    <td colspan="4" class="text-right"><strong>VAT (7%):</strong></td>
                                     <td><?php echo number_format($vatAmount, 2); ?></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="5" class="text-right"><strong>ราคาสุทธิ์:</strong></td>
+                                    <td colspan="4" class="text-right"><strong>ราคาสุทธิ์:</strong></td>
                                     <td><?php echo number_format($netPrice, 2); ?></td>
                                 </tr>
                             </tfoot>
@@ -316,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit-pay'])) {
     $orderPaidConfirmUser = $_SESSION['username'];
 
     // ตรวจสอบว่าจำนวนเงินไม่ต่ำกว่าราคาสุทธิ
-    if ($amount < $netPrice) {
+    if (round($amount, 2) < round($netPrice, 2)) {
         echo '<script>
                   setTimeout(function() {
                       swal({
@@ -374,12 +374,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel-order'])) {
     $orderCancelUser = $_SESSION['username']; // เก็บชื่อผู้ใช้ที่ทำการยกเลิก
     $paidDate = date('d-m-Y'); // เก็บวันที่ยกเลิก
 
+    // ดึงข้อมูล ref_bill_number ของคำสั่งซื้อที่ถูกยกเลิก
+    $selectRefBillNumber = "SELECT bill_number FROM tbl_order WHERE id = :order_id";
+    $stmt = $condb->prepare($selectRefBillNumber);
+    $stmt->bindValue(':order_id', $cancelOrderId, PDO::PARAM_INT);
+    $stmt->execute();
+    $refBillNumber = $stmt->fetchColumn();
+
+    // ดึงรายการสินค้าที่อยู่ใน ref_bill_number นั้น
+    $selectOrderItems = "SELECT product_id, quantity FROM tbl_order_item WHERE ref_bill_number = :ref_bill_number";
+    $stmt = $condb->prepare($selectOrderItems);
+    $stmt->bindValue(':ref_bill_number', $refBillNumber, PDO::PARAM_STR);
+    $stmt->execute();
+    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // echo '<pre>';
+    // print_r($item);
+    // exit;
+
+    // เริ่มทำการคืนจำนวนสินค้ากลับเข้าสู่คลังสินค้า
+    foreach ($items as $item) {
+        $productId = $item['product_id'];
+        $quantity = $item['quantity'];
+
+        // อัปเดตจำนวนสินค้าคงเหลือใน tbl_product โดยเพิ่มจำนวนกลับเข้าไป
+        $updateStock = $condb->prepare("
+            UPDATE tbl_product 
+            SET product_qty = product_qty + :quantity 
+            WHERE product_id = :productId
+        ");
+        $updateStock->bindValue(':quantity', $quantity, PDO::PARAM_INT);
+        $updateStock->bindValue(':productId', $productId, PDO::PARAM_INT);
+        $updateStock->execute();
+    }
+
+
     // อัปเดตสถานะคำสั่งซื้อเป็น "ถูกยกเลิก"
     $updateCancelOrder = $condb->prepare("
         UPDATE tbl_order 
         SET order_status = 'ถูกยกเลิก',
             order_paid_confirm_user = :confirmUser,
-            payment_mode = 'ถูกยกเลิก', -- แก้ไขที่นี่
+            payment_mode = 'ถูกยกเลิก',
             paid_date = :paidDate
         WHERE id = :orderId
     ");
